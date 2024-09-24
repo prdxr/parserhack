@@ -4,7 +4,14 @@ from .parsers.utils import clean_event
 from .models import Event
 from .parsers import *
 from .tagger import all_events_tagger
+import logging
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+file_handler = logging.FileHandler('/var/log/cellery.app.log')
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
 
 @shared_task
 def clean_database() -> None:
@@ -12,18 +19,19 @@ def clean_database() -> None:
     Метод для переодической очстки базы данных.
     Назначается на опеределенный периуд в админке
     """
+    logger.info(f'clean_database started')
     saved_hackatons = Event.objects.all()
     count_if_deleted_events = 0
     for event in saved_hackatons:
         if event.is_expired():
+            logger.info(f'{event.title} is expired at {event.end_date}')
             event.delete()
             count_if_deleted_events += 1
-
-    print(f'ended, deleted {count_if_deleted_events} events')
-
+    logger.info(f'clean_database ended, {count_if_deleted_events} deleted')
 
 @shared_task
 def parse_new_events() -> None:
+    logger.info(f'parse started')
     """
     метод для сбора новый информации с сайтав.
     Реализовано по средствам запуска всех парсеров,
@@ -41,29 +49,31 @@ def parse_new_events() -> None:
     for task in all_threads:
         try:
             rez = task()
-            print(task.__str__() + " - " + str(len(rez)))
+            logger.info(task.__str__() + " - " + str(len(rez)))
 
             return_rez += rez
         except KeyError:
-            print("Key error")
+            logger.warning("key error")
         except RuntimeError:
-            print("Runtime error")
+            logger.warning("runtime error")
         except Exception as e:
-            print("error " + str(e))
-            print(e.args)
+            logger.warning("error " + str(e))
+            logger.warning(e.args)
 
     for event in return_rez:
         clean_event(event)
 
     time_end = datetime.now() - time_start
-    print(time_end)
-    print(len(return_rez))
-
+    events_count = 0
+    error_count = 0
     for event in return_rez:
         try:
             if not event.already_exists():
                 event.save()
+                logger.info(f'{event.title} saved')
+                events_count += 1
         except Exception as e:
-            print("error in saving " + str(e))
+            error_count += 1
+            logger.warning("error in saving " + str(e))
     all_events_tagger()
-    print('ended')
+    logger.info(f'parse ended in {time_end}. {len(return_rez)} parsed. {events_count} saved. {error_count} errors occured.')

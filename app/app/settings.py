@@ -34,7 +34,7 @@ DEBUG = bool(int(os.environ.get('DEBUG')))
 ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8001',
-	'http://10.90.192.15:83'
+    'http://localhost:83'
 ]
 # Application definition
 
