@@ -11,7 +11,6 @@ from utils.parser_api import get_updates
 from utils.create_event_message import create_event_messsage
 from models.User import User
 
-load_dotenv()
 
 CRAWLING_INTERVAL = os.getenv("API_CRAWLING_INTERVAL")
 CRAWLING_INTERVAL = int(CRAWLING_INTERVAL) if CRAWLING_INTERVAL is not None else 30
