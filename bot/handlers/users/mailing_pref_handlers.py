@@ -1,11 +1,11 @@
-from keyboards.inline.mailing_prefs import *
+from bot.keyboards.inline.mailing_prefs import *
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
 from .handlers_utils import try_delete_cancel_message
-from loader import dp, bot
-from states.MailingPreferencesStatesGroup import MailingPreferencesStatesGroup
-from models.User import User
+from bot.loader import dp, bot
+from bot.states.MailingPreferencesStatesGroup import MailingPreferencesStatesGroup
+from bot.models.User import User
 
 
 @dp.message_handler(Command("mailing"))

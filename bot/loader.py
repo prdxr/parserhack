@@ -10,8 +10,6 @@ BASE_DIR = Path(__file__).parent.resolve()
 from login import get_token
 import logging.config
 
-
-
 # Создаем папки для логов
 log_err_dir = BASE_DIR / "logs" / "err"
 log_out_dir = BASE_DIR / "logs" / "out"
@@ -36,14 +34,14 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 if BOT_TOKEN is None:
     logger.error("Can't find BOT_TOKEN env variable")
     sys.exit()
-    
+
 bot = Bot(BOT_TOKEN, parse_mode="HTML")
 storage = MemoryStorage()
 dp = Dispatcher(bot=bot, storage=storage)
 
 ADMINS_IDS = os.getenv("ADMINS_IDS")
 admins = []
-if ADMINS_IDS is not None:    
+if ADMINS_IDS is not None:
     admins = ADMINS_IDS.split(",")
     admins = [admin for admin in admins if admin != ""]
 

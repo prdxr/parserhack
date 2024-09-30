@@ -1,11 +1,11 @@
-from keyboards.inline.events_prefs import *
+from bot.keyboards.inline.events_prefs import *
 from .handlers_utils import try_delete_cancel_message
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 from aiogram.dispatcher import FSMContext
-from loader import dp, bot
-from states.PreferencesStatesGroup import PreferencesStatesGroup
-from models.User import User
+from bot.loader import dp, bot
+from bot.states.PreferencesStatesGroup import PreferencesStatesGroup
+from bot.models.User import User
 
 
 @dp.message_handler(Command("preferences"))

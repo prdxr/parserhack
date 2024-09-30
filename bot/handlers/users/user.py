@@ -1,15 +1,15 @@
 import os
-from utils import *
-from models import *
-from keyboards.inline import *
+from bot.utils import *
+from bot.models import *
+from bot.keyboards.inline import *
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.exceptions import MessageToDeleteNotFound
 from .handlers_utils import cancel_message_exists
-from loader import dp, bot
-from keyboards.default.events_menu import events_menu
-from states.EventStatesGroup import EventStatesGroup
+from bot.loader import dp, bot
+from bot.keyboards.default.events_menu import events_menu
+from bot.states.EventStatesGroup import EventStatesGroup
 
 
 PAGE_SIZE = os.getenv("EVENTS_PAGE_SISE")
