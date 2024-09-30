@@ -1,6 +1,6 @@
 import re
 from django.db.models import QuerySet
-from main.models import Event, Tag, Keyword
+from models import Event, Tag, Keyword
 
 
 def update_all_v2(events: QuerySet, word_counter: int = 5) -> None:

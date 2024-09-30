@@ -1,6 +1,6 @@
 import json
 from django.core.management.base import BaseCommand
-from main.models import EventTypeClissifier, Tag, Keyword
+from app.main.models import EventTypeClissifier, Tag, Keyword
 
 DATA_FILE = "main/data/init.json"
 

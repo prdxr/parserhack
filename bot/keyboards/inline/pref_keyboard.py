@@ -1,9 +1,9 @@
 import os
 from aiogram.utils.callback_data import CallbackData
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from models.EventTag import EventTag
-from models.EventType import EventType
-from utils.get_indexes import get_indexes
+from bot.models.EventTag import EventTag
+from bot.models.EventType import EventType
+from bot.utils.get_indexes import get_indexes
 from .utils import add_control_buttons
 
 

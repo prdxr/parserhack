@@ -2,9 +2,9 @@ import aiohttp
 import logging
 import os
 import sys
-from loader import token
+from bot.loader import token
 from aiohttp.client_exceptions import ClientConnectionError
-from models import *
+from bot.models import *
 
 
 logger = logging.getLogger(f"root.{__name__}")

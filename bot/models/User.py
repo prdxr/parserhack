@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
-from database import user_preferences_collection
+from bot.database import user_preferences_collection
 from aiogram.dispatcher import FSMContext
-from models.Event import Event
+from bot.models.Event import Event
 
 
 class User(BaseModel):

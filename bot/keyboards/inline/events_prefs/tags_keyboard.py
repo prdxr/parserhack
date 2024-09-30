@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup
 from ..callback_data import tag_data
 from ..pref_keyboard import generate_events_pref_inline_keyboard
-from utils.parser_api import get_tags
+from bot.utils.parser_api import get_tags
 
 
 async def generate_tags_markup(checked_tags_codes: list[int],

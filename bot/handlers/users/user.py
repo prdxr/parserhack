@@ -140,7 +140,7 @@ async def send_name_request(message: types.Message, state: FSMContext):
     
     if message.text == "По названию":
         await message.answer("Введите название интересующего мероприятия")
-    else:
+    elif message.text == "По адресу":
         await message.answer("Введите адрес или его часть")
     await state.update_data(type=message.text)
     await EventStatesGroup.field.set()

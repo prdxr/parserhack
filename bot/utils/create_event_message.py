@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from models.Event import Event
+from bot.models.Event import Event
 
 
 MAX_ROW_LENGTH = os.getenv("EVENTS_ROW_MAX_LENGTH")
