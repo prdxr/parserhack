@@ -1,16 +1,15 @@
 import os
 import sys
 import time
+from pathlib import Path
 from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from dotenv import load_dotenv
+
+BASE_DIR = Path(__file__).parent.resolve()
 
 from login import get_token
 import logging.config
-from pathlib import Path
 
-
-BASE_DIR = Path(__file__).parent.resolve()
 
 
 # Создаем папки для логов

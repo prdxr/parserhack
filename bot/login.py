@@ -1,10 +1,10 @@
 import os
 import requests
 import sys
-
+from loader import BASE_DIR
 from dotenv import load_dotenv
 
-
+load_dotenv((BASE_DIR / ".env").as_posix())
 
 API_BASE_URL = os.getenv("API_BASE_URL")
 if API_BASE_URL is None:
