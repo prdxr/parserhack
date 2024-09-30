@@ -2,9 +2,7 @@ import asyncio
 import os
 import sys
 
-
 from motor.motor_asyncio import AsyncIOMotorClient
-
 
 DB_CONNECTION_STRING = os.getenv("DB_CONNECTION_STRING")
 DATABASE_NAME = os.getenv("DATABASE_NAME")
@@ -22,5 +20,11 @@ async def fetch_data():
     async for document in user_preferences_collection.find({}):
         print(document)
 
+
 # Запускаем асинхронную функцию через asyncio
-asyncio.run(fetch_data())
+async def main():
+    await fetch_data()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

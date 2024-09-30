@@ -1,9 +1,10 @@
 import os
 import requests
 import sys
-from loader import BASE_DIR
+from pathlib import Path
 from dotenv import load_dotenv
 
+BASE_DIR = Path(__file__).parent.resolve()
 load_dotenv((BASE_DIR / ".env").as_posix())
 
 API_BASE_URL = os.getenv("API_BASE_URL")
