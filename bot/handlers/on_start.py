@@ -1,7 +1,7 @@
 import asyncio
-from bot.jobs import send_new_events
+from jobs import send_new_events
 from aiogram.types import BotCommand, BotCommandScopeDefault
-from bot.loader import bot
+from loader import bot
 from .admin import send_to_admin
 
 

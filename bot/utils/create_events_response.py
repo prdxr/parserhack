@@ -1,5 +1,5 @@
-from bot.models.Event import Event
-from bot.utils.create_event_message import create_event_messsage
+from models.Event import Event
+from utils.create_event_message import create_event_messsage
 
 
 def create_events_response(start_index: int, end_index: int, 

@@ -1,4 +1,4 @@
-from bot.loader import bot, admins
+from loader import bot, admins
 
 
 async def send_to_admin(dp):

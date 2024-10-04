@@ -1,11 +1,11 @@
-from bot.keyboards.inline.events_prefs import *
+from keyboards.inline.events_prefs import *
 from .handlers_utils import try_delete_cancel_message
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 from aiogram.dispatcher import FSMContext
-from bot.loader import dp, bot
-from bot.states.PreferencesStatesGroup import PreferencesStatesGroup
-from bot.models.User import User
+from loader import dp, bot
+from states.PreferencesStatesGroup import PreferencesStatesGroup
+from models.User import User
 
 
 @dp.message_handler(Command("preferences"))
@@ -13,7 +13,6 @@ async def start_pref_setting(message: types.Message, state: FSMContext):
     user = await User.init_user(message.from_user.id)
     await user.save_to_state(state)
     await state.update_data(current_page=1)
-    
     message = await message.answer("Выберите интересующие вас виды мероприятий:",
                                    reply_markup=await generate_events_types_markup(user.events_types, 
                                                                                    1))

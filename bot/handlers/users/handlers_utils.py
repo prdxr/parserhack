@@ -1,7 +1,7 @@
 import logging
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.exceptions import MessageToDeleteNotFound
-from bot.loader import bot
+from loader import bot
 
 
 logger = logging.getLogger(f"root.{__name__}")

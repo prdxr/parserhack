@@ -1,15 +1,15 @@
 import os
-from bot.utils import *
-from bot.models import *
-from bot.keyboards.inline import *
+from utils import *
+from models import *
+from keyboards.inline import *
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.exceptions import MessageToDeleteNotFound
 from .handlers_utils import cancel_message_exists
-from bot.loader import dp, bot
-from bot.keyboards.default.events_menu import events_menu
-from bot.states.EventStatesGroup import EventStatesGroup
+from loader import dp, bot
+from keyboards.default.events_menu import events_menu
+from states.EventStatesGroup import EventStatesGroup
 
 
 PAGE_SIZE = os.getenv("EVENTS_PAGE_SISE")
@@ -19,11 +19,13 @@ PAGE_SIZE = int(PAGE_SIZE) if PAGE_SIZE is not None else 5
 @dp.message_handler(Command("start"))
 async def show_start_menu(message: types.Message):
     user_id = message.from_user.id
-    await User.init_user(user_id)    
-    await message.answer("Добро пожаловать!\nВыберите команду /events" \
-        " для начала работы с мероприятиями.\nКоманда /preferences" \
-        " позволит вам выбрать категории для отображения инетересующих вас мероприятий." \
-        "\nС помощью команды /mailing вы сможете настроить режим рассылки информации о мероприятиях.")
+    await User.init_user(user_id)
+    await message.answer(
+        "Добро пожаловать!\n"
+        "Выберите команду /events для начала работы с мероприятиями.\n"
+        "Команда /preferences позволит вам выбрать категории для отображения интересующих вас мероприятий.\n"
+        "С помощью команды /mailing вы сможете настроить режим рассылки информации о мероприятиях."
+    )
 
 
 @dp.message_handler(Command("events"))

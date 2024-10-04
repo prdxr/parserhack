@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.exceptions import MessageToDeleteNotFound
-from bot.loader import dp, bot
+from loader import dp, bot
 
 
 @dp.callback_query_handler(text_contains="action", state="*")

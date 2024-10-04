@@ -1,5 +1,5 @@
 from datetime import datetime
-from app.app.celery import shared_task
+from celery import shared_task
 from .parsers.utils import clean_event
 from .models import Event
 from .parsers import *
