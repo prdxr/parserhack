@@ -10,6 +10,7 @@ from .handlers_utils import cancel_message_exists
 from loader import dp, bot
 from keyboards.default.events_menu import events_menu
 from states.EventStatesGroup import EventStatesGroup
+from handlers.users.event_page_handler import get_event_page
 
 
 PAGE_SIZE = os.getenv("EVENTS_PAGE_SISE")
@@ -69,7 +70,7 @@ async def get_all_events(message: types.Message, state: FSMContext):
 
     user_id = message.from_user.id
     await message.delete()
-    result_message = ""
+
     data = await state.get_data()
     page_size = int(data["page_size"])
     
@@ -93,40 +94,9 @@ async def get_all_events(message: types.Message, state: FSMContext):
         # Для отслеживания последнего сообщения с виджетом переключения страниц
         await state.update_data(last_events_list_message_id=message.message_id)
 
-
 @dp.callback_query_handler(text_contains="event_list")
-async def get_event_page(query: types.CallbackQuery, state: FSMContext):
-    query_data = query.data.split(":")
-    str_page_number = query_data[1]
-    # Завершаем просмотр мероприятий
-    if int(str_page_number) == -1:
-        await query.message.delete()
-        await state.finish()
-        return
-
-    data = await state.get_data()
-
-    if "current_page" not in data:
-        await query.message.delete()
-        return
-    
-    current_page_number = data["current_page"]
-    new_page_number = int(str_page_number)
-    
-    if new_page_number != current_page_number:
-        await state.update_data(current_page=new_page_number)
-        
-        data = await state.get_data()
-        events = data["events"]
-        page_size = data["page_size"]
-        start_index, end_index = get_indexes(events, new_page_number, page_size)
-        new_message_text = create_events_response(start_index, end_index, events)
-
-        await query.message.edit_text(text=new_message_text,
-                                      disable_web_page_preview=True,
-                                      reply_markup=get_events_list_keyboard(new_page_number,
-                                                                            page_size,
-                                                                            events))
+async def handle_event_list_callback(query: types.CallbackQuery, state: FSMContext):
+    await get_event_page(query, state)
 
 
 @dp.message_handler(lambda message: message.text and message.text\
