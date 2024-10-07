@@ -44,7 +44,7 @@ async def send_new_events():
                     total_pages = math.ceil(len(user_events) / PAGE_SIZE)
                     current_page = 1
 
-                    await storage.update_data(user.id, events=user_events, page_size=PAGE_SIZE,
+                    await storage.update_data(user=user.id, events=user_events, page_size=PAGE_SIZE,
                                               current_page=current_page)
 
                     paginated_events = user_events[:PAGE_SIZE]
@@ -59,7 +59,7 @@ async def send_new_events():
                                                                                                PAGE_SIZE,
                                                                                                user_events))
 
-                        await storage.update_data(user.id, last_events_list_message_id=message.message_id)
+                        await storage.update_data(user=user.id, last_events_list_message_id=message.message_id)
 
                     except aiogram.utils.exceptions.BotBlocked:
                         await user.delete()
