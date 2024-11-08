@@ -17,7 +17,6 @@
 venv/
  
 .DS_Store/
-.env
 
 
 ./mongo/
