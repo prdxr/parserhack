@@ -26,5 +26,7 @@ app/db.sqlite3
 *env/
 *venv/
 app/supervisord.log
+/tg_miniapp/node_modules/
+/tg_miniapp/package-lock.json
 
 nginx_logs/
