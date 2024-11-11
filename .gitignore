@@ -11,7 +11,6 @@ app/staticfiles/
 
 
 *.env
-*.env.*
 nginx_conf/logs/
 */__pycache__/
 **/__pycache__/
@@ -26,3 +25,5 @@ app/db.sqlite3
 *env/
 *venv/
 app/supervisord.log
+/tg_miniapp/node_modules/
+/tg_miniapp/package-lock.json
