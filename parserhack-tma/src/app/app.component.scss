@@ -1,0 +1,9 @@
+div.tabs-container {
+  display: flex;
+  flex-direction: row;
+
+  > div {
+    padding: 1em 10em;
+    background: gray;
+  }
+}
