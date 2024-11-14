@@ -1,3 +1,17 @@
 :host {
 
 }
+
+p.event-description {
+  text-align: justify;
+}
+
+div.event {
+  background-color: #6D55A9;
+  border-radius: 2%;
+  padding: 2px 2%;
+  margin: 5px 0;
+  > p, h3 {
+    color: #ECE8ED;
+  }
+}

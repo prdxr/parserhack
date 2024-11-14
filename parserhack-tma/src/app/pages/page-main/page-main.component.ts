@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import {NgForOf} from '@angular/common';
 import {ApiService, TApiData} from '../../services/api.service';
 import {Router} from '@angular/router';
+import {animate, state, style, transition, trigger} from '@angular/animations';
 
 @Component({
   selector: 'app-page-main',
@@ -10,7 +11,7 @@ import {Router} from '@angular/router';
     NgForOf
   ],
   templateUrl: './page-main.component.html',
-  styleUrl: './page-main.component.scss'
+  styleUrl: './page-main.component.scss',
 })
 export class PageMainComponent {
 
@@ -32,5 +33,4 @@ export class PageMainComponent {
       this.data = data;
     })
   }
-
 }

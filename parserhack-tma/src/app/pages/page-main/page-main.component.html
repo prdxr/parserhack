@@ -1,9 +1,10 @@
 <h1 class="text-color-accent">Привет, {{ user }}!</h1>
 <h2 class="text-color-accent">Сводка актуальных событий</h2>
-<table class="table-events">
+<div class="table-events">
   <ng-container *ngFor="let row of data; let index=index">
-  <tr>
-    <td>{{ row.id }}</td>
-  </tr>
+  <div class="event">
+    <h3 class="event-name">{{ row.title }}</h3>
+    <p class="event-description">{{ row.description }}</p>
+  </div>
   </ng-container>
-</table>
+</div>
