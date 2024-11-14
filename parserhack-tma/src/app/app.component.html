@@ -1,6 +1,10 @@
-<router-outlet></router-outlet>
-<div class="tabs-container">
-  <div routerLink="main">main</div>
-  <div routerLink="events">events</div>
-  <div routerLink="settings">settings</div>
-</div>
+<body>
+  <div class="content-container">
+    <router-outlet></router-outlet>
+  </div>
+  <div class="tabs-container">
+    <div routerLink="main" routerLinkActive="tab-active">main</div>
+    <div routerLink="events" routerLinkActive="tab-active">events</div>
+    <div routerLink="settings" routerLinkActive="tab-active">settings</div>
+  </div>
+</body>
