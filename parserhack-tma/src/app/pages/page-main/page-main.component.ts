@@ -1,14 +1,19 @@
 import { Component } from '@angular/core';
-import {NgForOf} from '@angular/common';
+import {NgForOf, NgIf} from '@angular/common';
 import {ApiService, TApiData} from '../../services/api.service';
 import {Router} from '@angular/router';
 import {animate, state, style, transition, trigger} from '@angular/animations';
+import {EventCardComponent} from '../../components/event-card/event-card.component';
+import {PrettyDatePipe} from '../../pipes/pretty-date.pipe';
 
 @Component({
   selector: 'app-page-main',
   standalone: true,
   imports: [
-    NgForOf
+    NgForOf,
+    EventCardComponent,
+    PrettyDatePipe,
+    NgIf
   ],
   templateUrl: './page-main.component.html',
   styleUrl: './page-main.component.scss',
