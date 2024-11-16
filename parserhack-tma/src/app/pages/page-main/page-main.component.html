@@ -1,10 +1,21 @@
 <h1 class="text-color-accent">Привет, {{ user }}!</h1>
-<h2 class="text-color-accent">Сводка актуальных событий</h2>
-<div class="table-events">
+<h2 class="text-color-accent">
+  Сводка актуальных событий
+  <button (click)="this.getData()" class="refresh" *ngIf="!apiService.isLoading">Обновить</button>
+</h2>
+<div class="loading text-color-bright" *ngIf="apiService.isLoading">
+  Загрузка...
+</div>
+<div class="table-events" *ngIf="!apiService.isLoading">
   <ng-container *ngFor="let row of data; let index=index">
-  <div class="event">
-    <h3 class="event-name">{{ row.title }}</h3>
-    <p class="event-description">{{ row.description }}</p>
-  </div>
+    <app-event-card [eventTitle]="row.title" [eventType]="row.type_of_event.description" [eventTags]="row.tags">
+      <p class="event-description">{{ row.description }}</p>
+      <h4>Даты проведения:</h4>
+      <p>{{ row.start_date | prettyDate }} — {{ row.end_date | prettyDate }}</p>
+      <h4>Дедлайн регистрации:</h4>
+      <p>{{ row.registration_deadline | prettyDate: "Не указано" }}</p>
+      <h4>Подробнее:</h4>
+      <a [href]="row.url">{{ row.url }}</a>
+    </app-event-card>
   </ng-container>
 </div>

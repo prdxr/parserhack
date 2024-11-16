@@ -1,11 +1,22 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
+import {DatePipe} from '@angular/common';
+
+export interface IEventTag {
+  tag_code: number;
+  description: string;
+}
+
+export interface IEventType {
+  type_code: number;
+  description: string;
+}
 
 export interface IApiRow {
   id: number;
-  tags: string[];
-  type: object;
+  tags: IEventTag[];
+  type_of_event: IEventType;
   title: string;
   description: string;
   addresses: string;
@@ -25,6 +36,7 @@ export class ApiService {
 
   // public apiEndpoint = "http://88.218.67.139:83";
   public apiEndpoint = "https://ph-api-gw.temp.kitt-club.ru/api"
+  public isLoading = false;
 
   constructor(
     private http: HttpClient
@@ -48,7 +60,10 @@ export class ApiService {
     const headers = {
       // "Authorization": "Token ea2cf2f4d0406654a06d23eb9a8524e2d414e3fe"
     };
-    return this.http.get<any[]>(action, {headers});
+    this.isLoading = true;
+    const result = this.http.get<any[]>(action, {headers});
+    result.subscribe(() => this.isLoading = false);
+    return result;
   }
 
 }
