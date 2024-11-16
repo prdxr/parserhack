@@ -10,6 +10,11 @@ server {
 		alias /server/staticfiles/;
 	}
 
+    location /tma {
+        alias /server/tma;
+        index index.html;
+    }
+
 	location / {
 	    	proxy_pass   http://parser_hackaton;
     		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
