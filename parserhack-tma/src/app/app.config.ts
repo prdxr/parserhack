@@ -11,6 +11,7 @@ import {
   withInterceptors, withInterceptorsFromDi
 } from '@angular/common/http';
 import {Observable} from 'rxjs';
+import {provideAnimations} from '@angular/platform-browser/animations';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -33,6 +34,7 @@ export const appConfig: ApplicationConfig = {
       // DI-based interceptors must be explicitly enabled.
       withInterceptorsFromDi(),
     ),
+    provideAnimations(),
     {provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true}
   ]
 };
