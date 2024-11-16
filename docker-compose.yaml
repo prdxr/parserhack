@@ -70,6 +70,7 @@ services:
     container_name: nginx
     volumes:
       - ./nginx_conf/nginx-conf.d:/etc/nginx/conf.d/default.conf
+      - ./parserhack-tma/dist/parserhack-tma/browser:/server/tma
       - static_data:/server/staticfiles/
     ports:
       - "83:83"
