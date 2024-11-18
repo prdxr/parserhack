@@ -3,7 +3,7 @@ import sys
 import time
 from pathlib import Path
 from aiogram import Bot, Dispatcher
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.contrib.fsm_storage.redis import RedisStorage2
 
 BASE_DIR = Path(__file__).parent.resolve()
 
@@ -38,7 +38,7 @@ if BOT_TOKEN is None:
     sys.exit()
     
 bot = Bot(BOT_TOKEN, parse_mode="HTML")
-storage = MemoryStorage()
+storage = RedisStorage2(os.getenv("REDIS_HOST"), 6379, db=1, prefix='fsm', data_ttl=1800, state_ttl=1800)
 dp = Dispatcher(bot=bot, storage=storage)
 
 ADMINS_IDS = os.getenv("ADMINS_IDS")

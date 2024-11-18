@@ -1,11 +1,9 @@
-import aiohttp
 import logging
 import os
 import sys
 from loader import token
 from aiohttp.client_exceptions import ClientConnectionError
-from models import *
-
+from utils.api_commands import get_request
 
 logger = logging.getLogger(f"root.{__name__}")
 _headers = {
@@ -16,18 +14,7 @@ if API_BASE_URL is None:
     sys.exit("Incorrect API url")
 
 
-async def get_request(url: str, model: type) -> list:
-    """
-    Функция для выолнения GET-запросов к API и парсинга полученных данных
 
-    :param url: URL для запроса
-    :param model: Модель для парсинга
-    :return: list[model]
-    """
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url=url, headers=_headers) as response:
-            data = await response.json(content_type="application/json")
-            return [model.parse_obj(item) for item in data]
 
 def api_request_error_handler(func):
     async def wrapper(*args, **kwargs):
@@ -41,20 +28,29 @@ def api_request_error_handler(func):
 
 
 @api_request_error_handler
-async def get_events_types() -> list[EventType]:
+async def get_events_types() -> list[dict]:
+    """
+    Возвращает список типов событий в виде словаря
+    """
     url = API_BASE_URL + "hackaton/types/"
 
-    return await get_request(url, EventType)
+    return await get_request(url, headers=_headers)
 
 @api_request_error_handler
-async def get_events() -> list[Event]:
+async def get_events() -> list[dict]:
+    """
+    Возвращает список всех событий в виде словаря
+    """
     url = API_BASE_URL + "hackaton/"
 
-    return await get_request(url, Event)
+    return await get_request(url, headers=_headers)
 
 
 @api_request_error_handler
-async def get_events_by_preferences(events_types: list[int], tags: list[int]) -> list[Event]:
+async def get_events_by_preferences(events_types: list[int], tags: list[int]) -> list[dict]:
+    """
+        Возвращает список всех событий по предпочтению в виде словаря
+    """
     url = API_BASE_URL + "hackaton/?"
 
     for event_type in events_types:
@@ -65,22 +61,22 @@ async def get_events_by_preferences(events_types: list[int], tags: list[int]) ->
 
     url = url[:-1]
 
-    return await get_request(url, Event)
+    return await get_request(url, headers=_headers)
 
 
 @api_request_error_handler
-async def get_tags() -> list[EventTag]:
+async def get_tags() -> list[dict]:
     url = API_BASE_URL + "hackaton/tags/"
 
-    return await get_request(url, EventTag)
+    return await get_request(url, headers=_headers)
 
-
+# FIXME change updates logic
 @api_request_error_handler
-async def get_updates() -> list[Event]:
+async def get_updates() -> list[dict]:
     """
     Функция для получения новых мероприятий.
     Используется для рассылки
     """
     url = API_BASE_URL + "hackaton/update/"
 
-    return await get_request(url,Event)
+    return await get_request(url)

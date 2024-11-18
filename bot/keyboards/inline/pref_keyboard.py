@@ -11,14 +11,14 @@ PAGE_SIZE = os.getenv("PREF_PAGE_SIZE")
 PAGE_SIZE = int(PAGE_SIZE) if PAGE_SIZE is not None else 3
 
 
-def generate_events_pref_inline_keyboard(code_objects: list[EventType] | list[EventTag],
+def generate_events_pref_inline_keyboard(code_objects: list[dict],
                                          checked_codes: list[int],
                                          type_data: CallbackData,
                                          current_page: int) -> InlineKeyboardMarkup:
     start_index, end_index = get_indexes(code_objects, current_page, PAGE_SIZE)
     inline_keyboard = []
     for i in range(start_index, end_index + 1):
-        code_object = code_objects[i]
+        code_object = EventType.parse_obj(code_objects[i]) if code_objects[i].get("type_code") else EventTag.parse_obj(code_objects[i])
         button = None
         if code_object.type_code in checked_codes:
             button = InlineKeyboardButton(text="✓ " + code_object.description, 
