@@ -1,7 +1,9 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {DatePipe} from '@angular/common';
+
+declare var endpoint: string;
+declare var token: string;
 
 export interface IEventTag {
   tag_code: number;
@@ -34,8 +36,8 @@ export type TApiData = IApiRow[];
 })
 export class ApiService {
 
-  // public apiEndpoint = "http://88.218.67.139:83";
-  public apiEndpoint = "https://ph-api-gw.temp.kitt-club.ru/api"
+  public apiEndpoint = endpoint || '';
+  public authToken: string = token || '';
   public isLoading = false;
 
   constructor(
@@ -43,17 +45,18 @@ export class ApiService {
   ) {
   }
 
-  public authToken: string = '';
-
-  public initialize(): any {
-    const authEndpoint = this.apiEndpoint + '/auth/token/login/';
-    return this.http.post(this.apiEndpoint, JSON.stringify(
-      {
-        "username": "root",
-        "password": "root"
-      }
-    ));
-  }
+  // public initialize(): any {
+  //   const authEndpoint = this.apiEndpoint + '/auth/token/login/';
+  //   alert(authEndpoint);
+  //   const result = this.http.post(authEndpoint,
+  //     {
+  //       "username": "root",
+  //       "password": "root"
+  //     }
+  //   );
+  //   result.subscribe(data => { console.log(data); });
+  //   return result;
+  // }
 
   public getData(): Observable<TApiData> {
     const action = this.apiEndpoint + '/hackaton/';
