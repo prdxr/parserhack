@@ -13,10 +13,11 @@ import {
 import {Observable} from 'rxjs';
 import {provideAnimations} from '@angular/platform-browser/animations';
 
+declare var token: string;
+
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<any>, handler: HttpHandler): Observable<HttpEvent<any>> {
-    const token = 'ea2cf2f4d0406654a06d23eb9a8524e2d414e3fe';
     const update = {
       headers: request.headers.append('Authorization', `Token ${token}`)
     };
