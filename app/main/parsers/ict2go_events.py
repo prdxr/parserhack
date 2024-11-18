@@ -51,7 +51,7 @@ def get_ict2go_events() -> list[Event]:
         if event_raw_type not in event_types.keys():
             continue
 
-        event.type_of_event = EventTypeClissifier \
+        event.type_of_event = EventTypeClassifier \
                 .objects.get(type_code=event_types[event_raw_type])
 
         event_additional_info = _get_event_additional_info(event_url)

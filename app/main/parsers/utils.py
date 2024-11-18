@@ -7,7 +7,7 @@ HTML_TAG_CLEANER = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
 
 def get_event_types() -> dict[str, int]:
     event_types: dict[str, int] = {}
-    for event_type in EventTypeClissifier.objects.all():
+    for event_type in EventTypeClassifier.objects.all():
         event_types[event_type.description] = event_type.type_code
     return event_types
 
