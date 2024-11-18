@@ -5,6 +5,11 @@ import {PageSettingsComponent} from './pages/page-settings/page-settings.compone
 
 export const routes: Routes = [
   {
+    path: '',
+    pathMatch: 'full',
+    redirectTo: 'main'
+  },
+  {
     path: 'main',
     component: PageMainComponent
   },
