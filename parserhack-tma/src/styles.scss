@@ -1,7 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
 
 a, div, table, tr, td, p {
-  font-family: "Noto Sans Medium", serif;
+  //font-family: "Noto Sans Medium", serif;
+  font-family: Arial, Helvetica;
 }
 
 html, body {
@@ -12,11 +13,11 @@ html, body {
 }
 
 body {
-  background: #334;
+  background: #223;
 }
 
 table.table-events {
-  background: #6D55A9;
+  background: rebeccapurple;
 }
 
 .text-color-bright {
@@ -24,7 +25,7 @@ table.table-events {
 }
 
 .text-color-accent {
-  color: #6D55A9;
+  color: rebeccapurple;
 }
 
 .text-color-dark {
