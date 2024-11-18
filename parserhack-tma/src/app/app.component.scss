@@ -1,16 +1,17 @@
 div.tabs-container {
   position: fixed;
-  bottom: 0;
+  top: 0;
   left: 0;
   display: flex;
   flex-direction: row;
   width: 100%;
-
+  z-index: 1;
+  box-shadow: 0 0 5px 0 black;
   > div {
     padding: 1em 1em;
     margin: 0;
     width: 100%;
-    border: 1px #1C0221 solid;
+    border-right: 1px #1C0221 solid;
     text-align: center;
     background: rebeccapurple;
     color: mediumpurple;
@@ -25,4 +26,5 @@ div.tabs-container {
 div.content-container {
   height: 100%;
   margin: 5%;
+  padding-top: 40px;
 }
