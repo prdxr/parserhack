@@ -26,14 +26,14 @@ export class PageMainComponent {
   constructor(
     public apiService: ApiService
   ) {
+    // this.apiService.initialize();
     setTimeout(() => {
       this.getData();
     }, 1000);
   }
 
   public getData() {
-    this.apiService.authToken = this.apiService.initialize();
-    console.log("INITIALIZING API Endpoint, TOKEN: ", this.apiService.authToken);
+    // console.log("INITIALIZING API Endpoint, TOKEN: ", this.apiService.authToken);
     this.apiService.getData().subscribe(data => {
       this.data = data;
     })
