@@ -7,10 +7,11 @@ MAX_ROW_LENGTH = os.getenv("EVENTS_ROW_MAX_LENGTH")
 MAX_ROW_LENGTH = int(MAX_ROW_LENGTH) if MAX_ROW_LENGTH else 25 
 
 
-def create_event_messsage(event: Event) -> str:
+def create_event_messsage(event: dict) -> str:
     """
     Функция создает текст сообщения на основании переданного мероприятия
     """
+    event = Event.parse_obj(event)
     message = ""
     message += f"<b>{__format_title(event.title, ' ')}</b>\n\n"
     if event.address is not None:
