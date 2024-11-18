@@ -3,7 +3,6 @@ import sys
 import time
 from pathlib import Path
 from aiogram import Bot, Dispatcher
-from redis.asyncio import Redis
 from aiogram.contrib.fsm_storage.redis import RedisStorage2
 
 BASE_DIR = Path(__file__).parent.resolve()
@@ -42,8 +41,7 @@ bot = Bot(BOT_TOKEN, parse_mode="HTML")
 redis_host = os.getenv("REDIS_HOST", "localhost")
 redis_port = 6379
 redis_db = 1
-redis_client = Redis(host=redis_host, port=redis_port, db=redis_db, decode_responses=True)
-storage = RedisStorage2(redis=redis_client, prefix='fsm', data_ttl=1800, state_ttl=1800)
+storage = RedisStorage2(host=redis_host, port=redis_port, db=redis_db, prefix='fsm', data_ttl=1800, state_ttl=1800)
 dp = Dispatcher(bot=bot, storage=storage)
 
 ADMINS_IDS = os.getenv("ADMINS_IDS")
