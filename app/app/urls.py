@@ -17,7 +17,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include, re_path
-from main.views import TypeTitleAPIView, TagAPIView, EventTypeAPIView, HackatonUpdateAPIView
+from rest_framework.routers import DefaultRouter
+
+from main.views import TypeTitleAPIView, TagAPIView, EventTypeAPIView, HackatonUpdateAPIView, UserProfileListAPIView, \
+    UserProfileAPIViewSet
+
+router = DefaultRouter()
+router.register(r'api/auth/users/profile', UserProfileAPIViewSet, basename='user-profile')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,6 +31,8 @@ urlpatterns = [
     path('api/hackaton/tags/', TagAPIView.as_view()),
     path('api/hackaton/types/', EventTypeAPIView.as_view()),
     path("api/hackaton/update/", HackatonUpdateAPIView.as_view()),
+    path('api/auth/users/all', UserProfileListAPIView.as_view()),
+    path('', include(router.urls)),
     path('api/auth/', include('djoser.urls')),
     re_path('api/auth/', include('djoser.urls.authtoken')),
 

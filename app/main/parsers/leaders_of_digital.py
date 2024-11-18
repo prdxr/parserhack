@@ -44,7 +44,7 @@ def get_leaders_of_digital_events() -> list[Event]:
         if "Соревнование" not in event_types.keys():
             continue
 
-        event.type_of_event = EventTypeClissifier.objects.get(
+        event.type_of_event = EventTypeClassifier.objects.get(
             description="Соревнование")
         event.is_free = True
         events.append(event)

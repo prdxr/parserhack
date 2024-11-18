@@ -32,7 +32,7 @@ def get_all_events() -> list[Event]:
     # Для каждой html страницы получаем свои события
     for raw_page in raw_pages:
         raw_events_list_element = raw_page \
-            .find(name="div", class_="events-list")
+            .find(name="div", class_=["event_flex_main", "events-items"])
 
         raw_events_list = raw_events_list_element\
             .find_all("div", class_="event-wrapper")
@@ -104,7 +104,7 @@ def get_all_events() -> list[Event]:
             if raw_event_type not in event_types.keys():
                 continue
 
-            event.type_of_event = EventTypeClissifier \
+            event.type_of_event = EventTypeClassifier \
                 .objects.get(type_code=event_types[raw_event_type])
 
             # Вычисление стоимости мероприятия

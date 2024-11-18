@@ -1,5 +1,6 @@
+from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
-from .models import Event, Tag, EventTypeClissifier
+from .models import Event, Tag, EventTypeClassifier, BotUser
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -10,7 +11,7 @@ class TagSerializer(serializers.ModelSerializer):
 
 class EventTypeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = EventTypeClissifier
+        model = EventTypeClassifier
         fields = '__all__'
 
 
@@ -21,3 +22,17 @@ class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         exclude = ['date_of_parsing']
+
+class BotUserCreateSerializer(UserCreateSerializer):
+    telegram_id = serializers.IntegerField(required=False, allow_null=True)
+
+    class Meta(UserCreateSerializer.Meta):
+        model = BotUser
+        fields = ('username', 'password', 'telegram_id')
+
+class BotUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BotUser
+        fields = ['id', 'username', 'telegram_id','event_preferences','tag_preferences',
+        'new_events', 'mailing_all', 'mailing_status', 'notification_status']
+

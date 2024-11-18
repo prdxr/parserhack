@@ -1,6 +1,6 @@
 import json
 from django.core.management.base import BaseCommand
-from main.models import EventTypeClissifier, Tag, Keyword
+from main.models import EventTypeClassifier, Tag, Keyword
 
 DATA_FILE = "main/data/init.json"
 
@@ -15,10 +15,10 @@ class Command(BaseCommand):
         with open(DATA_FILE, "r") as file:
             data: dict = json.load(file)
             for event_type in data["types"]:
-                exists = EventTypeClissifier.objects.filter(description=event_type)\
+                exists = EventTypeClassifier.objects.filter(description=event_type)\
                     .exists()
                 if not exists:
-                    EventTypeClissifier.objects.create(description=event_type)
+                    EventTypeClassifier.objects.create(description=event_type)
 
             tags: dict = data["tags"]
             for tag_name, keywords in tags.items():

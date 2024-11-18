@@ -11,11 +11,9 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
-import os
-import django
-import os
 
 import os
+
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings')
 
@@ -52,6 +50,12 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'djoser',
 ]
+
+DJOSER = {
+    'SERIALIZERS': {
+        'user_create': 'main.serializer.BotUserCreateSerializer'
+    },
+}
 
 # SITE_ID = 0
 
@@ -108,6 +112,8 @@ DATABASES = {
 
 # # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
+AUTH_USER_MODEL = 'main.BotUser'
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -131,7 +137,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru'
 
 TIME_ZONE = 'Europe/Moscow'  # 'Europe/Moscow'
 #
@@ -159,4 +165,28 @@ CELERY_BROKER_URL = 'redis://redis:6379'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES':
     ('rest_framework.authentication.TokenAuthentication', ),
+}
+
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'update_debug.log',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
 }

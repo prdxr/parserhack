@@ -7,3 +7,4 @@ djoser
 psycopg2
 redis
 gunicorn
+load_dotenv
