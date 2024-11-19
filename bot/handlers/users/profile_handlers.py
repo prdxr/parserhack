@@ -56,7 +56,7 @@ async def register_username(message: types.Message, state: FSMContext):
     data = await state.get_data()
     message_id = data['registration_message_id']
     chat_id = data['registration_chat_id']
-    if not __check_credentials(message):
+    if __check_credentials(message):
         try:
             await bot.edit_message_text(chat_id=chat_id, message_id=message_id,
                                     text="Неверный формат имени пользователя. Введите другое имя: ")
@@ -88,7 +88,7 @@ async def register_password(message: types.Message, state: FSMContext):
     chat_id = data['registration_chat_id']
     username = data["username"]
     password = message.text
-    if not __check_credentials(message):
+    if __check_credentials(message):
         try:
             await bot.edit_message_text(chat_id=chat_id, message_id=message_id,
                                         text="Неверный формат пароля. Введите другой: ")
