@@ -15,7 +15,6 @@ if API_BASE_URL is None:
 
 
 
-
 def api_request_error_handler(func):
     async def wrapper(*args, **kwargs):
         try:
