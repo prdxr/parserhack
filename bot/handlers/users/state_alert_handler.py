@@ -8,6 +8,7 @@ from handlers.users.handlers_utils import cancel_message_exists
 from handlers.users.profile_handlers import __get_profile_text
 from keyboards.default.events_menu import events_menu
 from keyboards.inline import cancel_action_keyboard
+from keyboards.inline.tgapp_keyboard import generate_miniapp_keyboard
 from keyboards.inline.profile_keyboard import generate_profile_keyboard
 from loader import dp
 from login import get_token, API_BASE_URL
@@ -29,7 +30,7 @@ async def handle_commands(message: types.Message, state: FSMContext):
         await message.answer("Добро пожаловать!\nВыберите команду /events"
                              " для начала работы с мероприятиями.\nКоманда /profile"
                              " позволит вам создать зарегистрироваться и выбрать категории интересующих вас мероприятий."
-                             "\nТакже в профиле можно настроить рассылку новых мероприятий.")
+                             "\nТакже в профиле можно настроить рассылку новых мероприятий.", reply_markup=generate_miniapp_keyboard())
 
     elif command == '/events':
         await message.answer("Выберите интересующий способ получения мероприятий",
