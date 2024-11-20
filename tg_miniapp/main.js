@@ -11,8 +11,8 @@ bot.command("start", (ctx) => {
     ctx.reply(
         "Добро пожаловать! Нажмите на кнопку ниже, чтобы войти в приложение.",
         Markup.keyboard([
-            Markup.button.webApp("Войти в Parserhack", `${webapp_url}`),
-        ])
+            Markup.button.webApp("Войти в Event Voyager", `${webapp_url}`),
+        ]).resize()
     )
 });
 
