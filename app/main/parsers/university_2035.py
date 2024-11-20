@@ -91,7 +91,7 @@ def get_2035_university_events() -> list[Event]:
             if event.end_date < datetime.now(tzlocal()).astimezone(moscow_tz):
                 continue
              
-            event.type_of_event = EventTypeClissifier \
+            event.type_of_event = EventTypeClassifier \
                 .objects.get(type_code=event_types["Акселератор"])
 
             event.is_free = True

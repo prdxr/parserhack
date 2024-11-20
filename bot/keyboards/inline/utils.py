@@ -2,8 +2,10 @@ import math
 from aiogram.types import InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 
+from keyboards.inline import select_page_data
 
-def add_control_buttons(inline_keyboard: list[list[InlineKeyboardButton]], 
+
+def add_control_buttons(inline_keyboard: list[list[InlineKeyboardButton]],
                         objects: list, 
                         data: CallbackData, 
                         data_params: dict,
@@ -13,64 +15,33 @@ def add_control_buttons(inline_keyboard: list[list[InlineKeyboardButton]],
     Добавляет к переданной inline_keyboard кнопки перехода по страницам
     """
     pages_count = math.ceil(len(objects) / page_size)
-    buttons = []    
-    if current_page < 4:
-        if pages_count > 4:
-            buttons.extend(_get_start_end_buttons(current_page, 1, 
-                                                  4, data, 
-                                                  data_params))
-            buttons.append(InlineKeyboardButton(text=str(f"{pages_count} >>"), 
-                                                callback_data=data.new(**data_params, 
-                                                                       page_number=pages_count)))
-        else:
-            buttons.extend(_get_start_end_buttons(current_page, 1, 
-                                                  pages_count, data, 
-                                                  data_params))
-    elif (4 <= current_page <= pages_count - 3):
-        buttons.append(InlineKeyboardButton(text=str(f"<< 1"), 
-                                                callback_data=data.new(**data_params, 
-                                                                        page_number=1)))
-        buttons.append(InlineKeyboardButton(text=str(f"{current_page - 1}"), 
-                                            callback_data=data.new(**data_params, 
-                                                                   page_number=current_page - 1)))
-        buttons.append(InlineKeyboardButton(text=str(f"-{current_page}-"), 
-                                            callback_data=data.new(**data_params, 
-                                                                   page_number=current_page)))
-        buttons.append(InlineKeyboardButton(text=str(f"{current_page + 1}"), 
-                                            callback_data=data.new(**data_params, 
-                                                                   page_number=current_page + 1)))
-        buttons.append(InlineKeyboardButton(text=str(f"{pages_count} >>"), 
-                                            callback_data=data.new(**data_params, 
-                                                                   page_number=pages_count)))
+
+    if (current_page > 1):
+        prev_button = InlineKeyboardButton(
+            text="<<",
+            callback_data=data.new(**data_params, page_number=current_page-1)
+        )
     else:
-        if pages_count == 4:
-            buttons.extend(_get_start_end_buttons(current_page, 1, 
-                                                  4, data, 
-                                                  data_params))
-        else:
-            buttons.append(InlineKeyboardButton(text=str(f"<< 1"), 
-                                                callback_data=data.new(**data_params, 
-                                                                       page_number=1)))
-            buttons.extend(_get_start_end_buttons(current_page, pages_count-3, 
-                                                  pages_count, data, 
-                                                  data_params))
-    inline_keyboard.append(buttons)
-    inline_keyboard.append([InlineKeyboardButton(text="Готово", 
-                                                 callback_data=data.new(**data_params, 
-                                                                        page_number=-1))])
+        prev_button = InlineKeyboardButton(
+            text="<<",
+            callback_data=data.new(**data_params, page_number=0)
+        )
+
+    pages_display = InlineKeyboardButton(text=f"{current_page}/{pages_count}",
+                                         callback_data=select_page_data.new())
+    if (current_page < pages_count):
+        next_button = InlineKeyboardButton(
+            text=">>",
+            callback_data=data.new(**data_params, page_number=current_page+1)
+        )
+    else:
+        next_button = InlineKeyboardButton(
+            text=">>",
+            callback_data=data.new(**data_params, page_number=0)
+        )
+    cancel_button = InlineKeyboardButton(text="Готово", callback_data=data.new(**data_params, page_number=-1))
+    inline_keyboard.append([prev_button, pages_display, next_button])
+    inline_keyboard.append([cancel_button])
 
 
-def _get_start_end_buttons(current_page: int, start_page: int, 
-                           pages_count: int, data: CallbackData, 
-                           data_params: dict) -> list[InlineKeyboardButton]:
-    buttons = []
-    for i in range(start_page, pages_count + 1):
-        if i == current_page:
-            buttons.append(InlineKeyboardButton(text=str(f"-{i}-"), 
-                                                callback_data=data.new(**data_params, 
-                                                                       page_number=i))) 
-        else:
-            buttons.append(InlineKeyboardButton(text=str(f"{i}"), 
-                                                callback_data=data.new(**data_params, 
-                                                                       page_number=i))) 
-    return buttons
+

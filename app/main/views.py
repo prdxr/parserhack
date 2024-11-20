@@ -1,9 +1,12 @@
-from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import generics
+
+from django.db.models import Count
+from rest_framework import generics, viewsets, status
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.authtoken.models import Token
-from .models import Event, Tag, EventTypeClissifier, HistoryUserRequest
-from .serializer import EventSerializer, TagSerializer, EventTypeSerializer
+from rest_framework.response import Response
+
+from .models import Event, Tag, EventTypeClassifier, HistoryUserRequest, BotUser
+from .serializer import EventSerializer, TagSerializer, EventTypeSerializer, BotUserSerializer
 from django.db.models.query import QuerySet
 
 
@@ -77,31 +80,8 @@ class TypeTitleAPIView(generics.ListAPIView):
         return rez.order_by('start_date')
 
 
-class HackatonUpdateAPIView(generics.ListAPIView):
-    """
-    апи для новых мероприятий для конкретного приложения(например бота)
-    поьзователь индетифицирутся с помощью токена
-    """
-    permission_classes = [IsAuthenticated]
-    serializer_class = EventSerializer
-
-    def get_queryset(self):
-        token = self.request.auth
-
-        user = Token.objects.get(key=token).user
-
-        try:
-            current_user_history = HistoryUserRequest.objects.get(
-                user_id=user.id)
-        except ObjectDoesNotExist:
-            current_user_history = HistoryUserRequest.objects.create(
-                user_id=user.id)
-
-        result_queryset = Event.objects.filter(
-            date_of_parsing__gte=current_user_history.time_of_last_request)
-        current_user_history.save()
-
-        return result_queryset
+class HackatonUpdateAPIView(generics.UpdateAPIView):
+    pass
 
 
 class TagAPIView(generics.ListAPIView):
@@ -122,5 +102,132 @@ class EventTypeAPIView(generics.ListAPIView):
     permission_classes = [
         IsAuthenticated,
     ]
-    queryset = EventTypeClissifier.objects.all()
+    queryset = EventTypeClassifier.objects.all()
     serializer_class = EventTypeSerializer
+
+
+class UserProfileListAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = BotUserSerializer
+    queryset = BotUser.objects.all()
+
+
+class UserProfileAPIViewSet(viewsets.ModelViewSet):
+    queryset = BotUser.objects.all()
+    serializer_class = BotUserSerializer
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=True, methods=['patch'], url_path='remove-new-events')
+    def remove_new_events(self, request, pk=None):
+        user = self.get_object()
+        print("Received data:", request.data)
+        if not request.data:
+            return Response(
+                {"detail": "Нет данных для обработки."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        event_ids_to_remove = request.data.get('remove', [])
+        if not isinstance(event_ids_to_remove, list):
+            print("not list")
+            return Response(
+                {"detail": "'remove' должен быть списком идентификаторов событий."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        events_to_remove = Event.objects.filter(id__in=event_ids_to_remove)
+        if events_to_remove.count() != len(event_ids_to_remove):
+            print("not all events exist")
+            return Response(
+                {"detail": "Некоторые события не существуют."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        user.new_events.remove(*events_to_remove)
+        serializer = EventSerializer(user.new_events.all(), many=True)
+        return Response(
+            {
+                "detail": "События успешно удалены из new_events.",
+                "new_events": serializer.data
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+    @action(detail=True, methods=['get'], url_path='new-events')
+    def new_events(self, request, pk=None):
+        user = self.get_object()
+        new_events = user.new_events.all()
+        serializer = EventSerializer(new_events, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['patch'], url_path='toggle-mailing-status')
+    def toggle_mailing_status(self, request, pk=None):
+        user = self.get_object()
+        user.mailing_status = not user.mailing_status
+        if (not(user.mailing_status)):
+            try:
+                history = HistoryUserRequest.objects.get(user=user.id)
+                history.delete()
+            except HistoryUserRequest.DoesNotExist:
+                pass
+        user.save()
+        return Response({'mailing_status': user.mailing_status})
+
+    @action(detail=True, methods=['patch'], url_path='toggle-mailing-all')
+    def update_mailing_type(self, request, pk=None):
+        user = self.get_object()
+        user.mailing_all = not user.mailing_all
+        user.save()
+        return Response({'mailing_all': user.mailing_all})
+
+    @action(detail=True, methods=['patch'], url_path='toggle-notification-status')
+    def toggle_notification_status(self, request, pk=None):
+        user = self.get_object()
+        user.notification_status = not user.notification_status
+        user.save()
+        return Response({'notification_status': user.notification_status})
+
+    @action(detail=True, methods=['patch'], url_path='change-event-preference')
+    def change_event_preference(self, request, pk=None):
+        user = self.get_object()
+        event_types = request.data.get('event_preferences')
+        if not isinstance(event_types, list):
+            return Response(
+                {'Error': 'event_preferences должен быть списком вида type_code.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            event_type_objs = EventTypeClassifier.objects.filter(type_code__in=event_types)
+            user.event_preferences.set(event_type_objs)
+            user.save()
+            return Response(
+                {'event_preferences': user.event_preferences.values_list('type_code', flat=True)},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                {'Error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=True, methods=['patch'], url_path='change-tag-preferences')
+    def change_tag_preference(self, request, pk=None):
+        user = self.get_object()
+        tag_types = request.data.get('tag_preferences')
+        if not isinstance(tag_types, list):
+            return Response(
+                {'Error': 'tag_preferences должен быть списком вида [tag_code1, tag_code2, ..].'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            tag_type_objs = Tag.objects.filter(tag_code__in=tag_types)
+            user.tag_preferences.set(tag_type_objs)
+            user.save()
+            return Response(
+                {'tag_preferences': user.tag_preferences.values_list('tag_code', flat=True)},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                {'Error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+

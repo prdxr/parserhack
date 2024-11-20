@@ -1,4 +1,5 @@
 from aiogram import executor
+from loader import dp
 from handlers.users import *
 from handlers.on_start import start
 from handlers.on_shutdown import shutdown

@@ -1,11 +1,13 @@
 from datetime import datetime, timezone, timedelta
 from dateutil.tz import tzlocal
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 # Create your models here.
 
 
-class EventTypeClissifier(models.Model):
+class EventTypeClassifier(models.Model):
     """
     классификатор типов событий
     """
@@ -20,23 +22,14 @@ class EventTypeClissifier(models.Model):
         return id(self)
 
 
-class HistoryUserRequest(models.Model):
-    """
-    модель для записей времени обращения конкретного пользователя к серверу
-    """
-
-    user_id = models.IntegerField(primary_key=True)
-    time_of_last_request = models.DateTimeField(auto_now=True)
-
-    def __str__(self) -> int:
-        return self.user_id
 
 
 class Tag(models.Model):
     """
     классификатор тегов
     """
-    tag_code = models.SmallAutoField(primary_key=True)
+    tag_code = models.SmallAutoField(primary_key=True,
+                                     verbose_name="tag_code")
     description = models.CharField(max_length=255, unique=True)
 
     def __str__(self) -> str:
@@ -71,14 +64,14 @@ class Event(models.Model):
 
     url = models.URLField(max_length=255)
 
-    type_of_event = models.ForeignKey(EventTypeClissifier,
+    type_of_event = models.ForeignKey(EventTypeClassifier,
                                       on_delete=models.CASCADE)
     is_free = models.BooleanField(blank=True, null=True)
 
     tags = models.ManyToManyField(Tag, blank=True)
 
     date_of_parsing = models.DateTimeField(auto_now_add=True)
-    
+
     def already_exists(self) -> bool:
         saved_events = Event.objects.all()
         for saved_event in saved_events:
@@ -87,7 +80,7 @@ class Event(models.Model):
             if new_event_title == saved_event_title:
                 return True
         return False
-    
+
     def is_expired(self) -> bool:
         moscow_tz = timezone(timedelta(hours=3))
         today = datetime.now(tzlocal()).astimezone(moscow_tz)
@@ -109,3 +102,37 @@ class Event(models.Model):
 
     def __hash__(self) -> int:
         return id(self)
+
+
+class BotUser(AbstractUser):
+    username = models.CharField(max_length=255,
+                                unique=True,
+                                error_messages={
+                                    "unique": "Имя пользователя должно быть уникальным.",
+                                })
+
+    telegram_id = models.BigIntegerField(unique=True, blank=True, null=True)
+    mailing_all = models.BooleanField(default=True)
+    mailing_status = models.BooleanField(default=False)
+    notification_status = models.BooleanField(default=False)
+    new_events = models.ManyToManyField('Event', blank=True)
+    event_preferences = models.ManyToManyField('EventTypeClassifier', blank=True)
+    tag_preferences = models.ManyToManyField('Tag', blank=True)
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = []
+
+    def __str__(self):
+        return self.username
+
+
+
+class HistoryUserRequest(models.Model):
+    """
+    модель для записей времени обращения конкретного пользователя к серверу
+    """
+
+    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE, primary_key=True)
+    time_of_last_request = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.user)

@@ -157,7 +157,7 @@ def _get_event(raw_event: BS4Tag) -> Event | None:
     if "Конференция" not in event_types.keys():
         return None
 
-    event.type_of_event = EventTypeClissifier \
+    event.type_of_event = EventTypeClassifier \
         .objects.get(type_code=event_types["Конференция"])
 
     event.is_free = event_additional_info["is_free"]

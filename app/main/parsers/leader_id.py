@@ -104,7 +104,7 @@ def _get_event(raw_event: dict) -> Event | None:
         if raw_event["space"] is not None:
             event.address = raw_event["space"]["address"]["title"]
 
-    event.type_of_event = EventTypeClissifier \
+    event.type_of_event = EventTypeClassifier \
             .objects.get(type_code=event_types[event_raw_type])
 
     return event

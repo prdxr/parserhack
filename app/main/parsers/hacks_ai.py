@@ -93,7 +93,7 @@ def _fill_event(event: Event, event_id: int, event_type: str) -> bool:
         if "Хакатон" not in event_types.keys():
             return False
 
-        event.type_of_event = EventTypeClissifier.objects.get(
+        event.type_of_event = EventTypeClassifier.objects.get(
             description="Хакатон")
     else:
         event.title = f"'Цифровой прорыв'. Чемпионат ({event.address})"
@@ -101,7 +101,7 @@ def _fill_event(event: Event, event_id: int, event_type: str) -> bool:
         if "Соревнование" not in event_types.keys():
             return False
 
-        event.type_of_event = EventTypeClissifier.objects.get(
+        event.type_of_event = EventTypeClassifier.objects.get(
             description="Соревнование")
 
     event.is_free = True
