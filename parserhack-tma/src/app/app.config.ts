@@ -12,20 +12,9 @@ import {
 } from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {provideAnimations} from '@angular/platform-browser/animations';
+import {AuthInterceptor} from './interceptors/auth.interceptor';
 
 declare var token: string;
-
-@Injectable()
-export class AuthInterceptor implements HttpInterceptor {
-  intercept(request: HttpRequest<any>, handler: HttpHandler): Observable<HttpEvent<any>> {
-    const update = {
-      headers: request.headers.append('Authorization', `Token ${token}`)
-    };
-    const requestNew = request.clone(update);
-    console.log("TEST");
-    return handler.handle(requestNew);
-  }
-}
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -39,13 +28,3 @@ export const appConfig: ApplicationConfig = {
     {provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true}
   ]
 };
-
-// export function authInterceptor(request: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> {
-//   const token = 'ea2cf2f4d0406654a06d23eb9a8524e2d414e3fe';
-//   const update = {
-//     headers: request.headers.append('Authorization', `Token ${token}`)
-//   };
-//   const requestNew = request.clone(update);
-//   console.log("TEST");
-//   return next(requestNew);
-// }

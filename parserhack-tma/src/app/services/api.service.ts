@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {HttpClient, HttpResponse} from '@angular/common/http';
+import {map, Observable} from 'rxjs';
 
 declare var endpoint: string;
 declare var token: string;
@@ -60,13 +60,9 @@ export class ApiService {
 
   public getData(): Observable<TApiData> {
     const action = this.apiEndpoint + '/hackaton/';
-    const headers = {
-      // "Authorization": "Token ea2cf2f4d0406654a06d23eb9a8524e2d414e3fe"
-    };
     this.isLoading = true;
-    const result = this.http.get<any[]>(action, {headers});
+    const result = this.http.get<any[]>(action);
     result.subscribe(() => this.isLoading = false);
     return result;
   }
-
 }
