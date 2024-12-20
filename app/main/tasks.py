@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import time
 from datetime import datetime
 
 import requests
@@ -62,6 +63,7 @@ def notify_users() -> None:
         try:
             requests.post(TG_API_URL, data=data)
             logger.info(f"Уведомления отправлены пользователю {user_id}")
+            time.sleep(0.2)
         except Exception as e:
             logger.error(f"Ошибка при отправке уведомлений пользователю {user_id}: {e}", exc_info=True)
 

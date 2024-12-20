@@ -24,7 +24,7 @@ headers = {
 
 
 @dp.message_handler(lambda message: message.text and message.text\
-    in ["Все события", "Интересующие события"], state="*")
+    in ["Все события", "Интересующие события", "все события", "интересующие события"], state="*")
 async def get_all_events(message: types.Message, state: FSMContext):
     events: list[dict] = []
     data = await state.get_data()
@@ -38,9 +38,9 @@ async def get_all_events(message: types.Message, state: FSMContext):
         except MessageToDeleteNotFound:
             pass
     await state.finish()
-    if message.text == "Все события":
+    if message.text == "Все события" or message.text == "все события":
         events.extend(await get_events())
-    elif message.text == "Интересующие события":
+    elif message.text == "Интересующие события" or message.text == "интересующие события":
         response = requests.get(f"{API_BASE_URL}auth/users/all", headers=headers).json()
         bot_user = None
         for user in response:
@@ -65,10 +65,13 @@ async def get_all_events(message: types.Message, state: FSMContext):
     await state.update_data(current_page=1)
 
     user_id = message.from_user.id
-    await message.delete()
+    try:
+        await message.delete()
+    except Exception:
+        pass
     data = await state.get_data()
     events = data.get("events", [])
-    page_size = int(data["page_size"])
+    page_size = PAGE_SIZE
 
     if len(events) == 0:
         result_message = "Не удалось найти мероприятия"
