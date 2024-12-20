@@ -26,3 +26,5 @@ app/db.sqlite3
 *env/
 *venv/
 app/supervisord.log
+
+nginx_logs/
