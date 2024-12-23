@@ -1,8 +1,10 @@
+import asyncio
 
 import requests
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
+from aiogram.utils.exceptions import RetryAfter
 
 from handlers.users.handlers_utils import cancel_message_exists
 from handlers.users.profile_handlers import __get_profile_text
@@ -52,22 +54,26 @@ async def state_alert(message: types.Message, state: FSMContext):
 
 
 async def show_profile(message: types.Message, state: FSMContext):
-    user_id = message.from_user.id
-    user_data = requests.get(API_BASE_URL + f"auth/users/all", headers=headers).json()
-    user = None
-    for u in user_data:
-        if u['telegram_id'] == user_id:
-            user = u
-            break
-    if user is None:
-        bot_message = await message.answer(text="Вы не зарегистрированы. Введите логин: ")
-        await message.delete()
-        await state.set_state(ProfileStatesGroup.register_username)
+    try:
+        user_id = message.from_user.id
+        user_data = requests.get(API_BASE_URL + f"auth/users/all", headers=headers).json()
+        user = None
+        for u in user_data:
+            if u['telegram_id'] == user_id:
+                user = u
+                break
+        if user is None:
+            bot_message = await message.answer(text="Вы не зарегистрированы. Введите логин: ")
+            await message.delete()
+            await state.set_state(ProfileStatesGroup.register_username)
+            await state.update_data(registration_message_id=bot_message.message_id,
+                                    registration_chat_id=bot_message.chat.id)
+            return
+        bot_message = await message.answer(await __get_profile_text(user), reply_markup=generate_profile_keyboard(user),
+                                           parse_mode='HTML')
+        await state.set_state(ProfileStatesGroup.show_profile)
+        await state.update_data(tg_user=user)
         await state.update_data(registration_message_id=bot_message.message_id,
                                 registration_chat_id=bot_message.chat.id)
-        return
-    bot_message = await message.answer(await __get_profile_text(user), reply_markup=generate_profile_keyboard(user),
-                                       parse_mode='HTML')
-    await state.set_state(ProfileStatesGroup.show_profile)
-    await state.update_data(tg_user=user)
-    await state.update_data(registration_message_id=bot_message.message_id, registration_chat_id=bot_message.chat.id)
+    except RetryAfter as e:
+        await asyncio.sleep(e.timeout)

@@ -1,3 +1,4 @@
+import asyncio
 import math
 
 import requests
@@ -9,7 +10,7 @@ from models import *
 from keyboards.inline import *
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from aiogram.utils.exceptions import MessageToDeleteNotFound, MessageNotModified, MessageToEditNotFound
+from aiogram.utils.exceptions import MessageToDeleteNotFound, MessageNotModified, MessageToEditNotFound, RetryAfter
 from loader import dp, bot
 from states.EventStatesGroup import EventStatesGroup
 from utils.create_events_response import create_new_events_response
@@ -28,71 +29,71 @@ headers = {
 async def get_all_events(message: types.Message, state: FSMContext):
     events: list[dict] = []
     data = await state.get_data()
-    # Если сообщение с виджетом перехода по страницам уже существует, 
+    # Если сообщение с виджетом перехода по страницам уже существует,
     # то его нужно удалить для избежания конфликтов
     # с потенциально разным количеством мероприятий
     if "last_events_list_message_id" in data:
         try:
-            await bot.delete_message(message.from_user.id, 
+            await bot.delete_message(message.from_user.id,
                                      data["last_events_list_message_id"])
         except MessageToDeleteNotFound:
             pass
     await state.finish()
-    if message.text == "Все события" or message.text == "все события":
-        events.extend(await get_events())
-    elif message.text == "Интересующие события" or message.text == "интересующие события":
-        response = requests.get(f"{API_BASE_URL}auth/users/all", headers=headers).json()
-        bot_user = None
-        for user in response:
-            if user['telegram_id'] == message.from_user.id:
-                bot_user = user
-                if len(user['event_preferences']) == 0 and len(user['tag_preferences']) == 0:
-                    await bot.send_message(message.from_user.id,
-                                        text="Вы не указали предпочтения в профиле\n"\
-                                            "Воспользуйтесь командой /profile.")
-                    return
-                else:
-                    events.extend(await get_events_by_preferences(user['event_preferences'],
-                                                                  user['tag_preferences']))
-                    break
-        if bot_user is None:
-            await bot.send_message(message.from_user.id,text="Вы не создали профиль.\n"\
-                                    "Воспользуйтесь командой /profile.")
-            return
-    await state.set_state(EventStatesGroup.get_events)
-    await state.update_data(events=events)
-    await state.update_data(page_size=PAGE_SIZE)
-    await state.update_data(current_page=1)
-
-    user_id = message.from_user.id
     try:
-        await message.delete()
-    except Exception:
-        pass
-    data = await state.get_data()
-    events = data.get("events", [])
-    page_size = PAGE_SIZE
-
-    if len(events) == 0:
-        result_message = "Не удалось найти мероприятия"
-        await bot.send_message(user_id, result_message)
-    elif len(events) <= page_size:
-        result_message = create_events_response(0, len(events) - 1,
-                                                events)
-        await bot.send_message(user_id, result_message, 
-                               disable_web_page_preview=True)
-        await state.finish()
-    else:
-        result_message = create_events_response(0, page_size-1, events)
-        message = await bot.send_message(user_id,
-                                         result_message,
-                                         parse_mode="HTML",
-                                         disable_web_page_preview=True,
-                                         reply_markup=get_events_list_keyboard(1,
-                                                                               page_size,
-                                                                               events))
-        # Для отслеживания последнего сообщения с виджетом переключения страниц
-        await state.update_data(last_events_list_message_id=message.message_id)
+        if message.text == "Все события" or message.text == "все события":
+            events.extend(await get_events())
+        elif message.text == "Интересующие события" or message.text == "интересующие события":
+            response = requests.get(f"{API_BASE_URL}auth/users/all", headers=headers).json()
+            bot_user = None
+            for user in response:
+                if user['telegram_id'] == message.from_user.id:
+                    bot_user = user
+                    if len(user['event_preferences']) == 0 and len(user['tag_preferences']) == 0:
+                        await message.answer(
+                            text="Вы не указали предпочтения в профиле\n" \
+                                 "Воспользуйтесь командой /profile.")
+                        return
+                    else:
+                        events.extend(await get_events_by_preferences(user['event_preferences'],
+                                                                      user['tag_preferences']))
+                        break
+            if bot_user is None:
+                await message.answer(text="Вы не создали профиль.\n" \
+                                          "Воспользуйтесь командой /profile.")
+                return
+        await state.set_state(EventStatesGroup.get_events)
+        await state.update_data(events=events)
+        await state.update_data(page_size=PAGE_SIZE)
+        await state.update_data(current_page=1)
+        try:
+            await message.delete()
+        except Exception:
+            pass
+        data = await state.get_data()
+        events = data.get("events", [])
+        page_size = PAGE_SIZE
+        if len(events) == 0:
+            result_message = "Не удалось найти мероприятия"
+            await message.answer(text=result_message)
+        elif len(events) <= page_size:
+            result_message = create_events_response(0, len(events) - 1,
+                                                    events)
+            await message.answer(text=result_message,
+                                 disable_web_page_preview=True)
+            await state.finish()
+        else:
+            result_message = create_events_response(0, page_size - 1, events)
+            message = await message.answer(
+                text=result_message,
+                parse_mode="HTML",
+                disable_web_page_preview=True,
+                reply_markup=get_events_list_keyboard(1,
+                                                      page_size,
+                                                      events))
+            # Для отслеживания последнего сообщения с виджетом переключения страниц
+            await state.update_data(last_events_list_message_id=message.message_id)
+    except RetryAfter as e:
+        await asyncio.sleep(e.timeout)
 
 @dp.callback_query_handler(text_contains="select_page", state=EventStatesGroup.get_events)
 async def get_specific_page(query: types.CallbackQuery, state: FSMContext):
