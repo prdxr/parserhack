@@ -1,123 +1,134 @@
-import html
 import re
+import logging
+
+import html
 import requests
 from bs4 import BeautifulSoup
-from dateutil.tz import tzlocal
-from datetime import datetime, timezone, timedelta
+
 from main.models import *
 from .utils import get_event_types, HTML_TAG_CLEANER
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-def get_all_events() -> list[Event]:
-    """
-    Возвращает список различных событий с сайта:
-    'https://all-events.ru/events/'
-    """
+
+def get_all_events():
+    BASIC_URL = "https://all-events.ru/events/calendar/theme-is-upravlenie_personalom_hr-or-informatsionnye_tekhnologii-or-automotive_industry-or-bezopasnost-or-blokcheyn_kriptovalyuty-or-innovatsii-or-it_telecommunications-or-elektronnaya_kommertsiya/type-is-conferencia-or-hackathon-or-contest"
+
     event_types = get_event_types()
     events = []
 
-    url = "https://all-events.ru/events/calendar/theme-is-upravlenie_personalom_hr-or-informatsionnye_tekhnologii-or-automotive_industry-or-bezopasnost-or-blokcheyn_kriptovalyuty-or-innovatsii-or-it_telecommunications-or-elektronnaya_kommertsiya/type-is-conferencia-or-hackathon-or-contest/"
-    response = requests.get(url)
-    html_decoded_string = html.unescape(response.text)
-    first_page = BeautifulSoup(html_decoded_string, "html.parser")
-    navigation_pages = first_page.find(name="div", attrs={"class": "navigation-pages"})\
-        .find_all(name="a")
-    raw_pages = [first_page]
-    for navigation_page in navigation_pages:
-        page_address = f"{url}?PAGEN_1={navigation_page.string}"
-        response = requests.get(page_address)
-        raw_page = BeautifulSoup(response.text, "html.parser")
-        raw_pages.append(raw_page)
+    try:
+        response = requests.get(BASIC_URL, timeout=10)
+        response.raise_for_status()  # Raises an HTTPError for bad responses
+    except requests.RequestException as e:
+        logger.error(f"Failed to fetch the page: {e}")
+        return events
 
-    # Для каждой html страницы получаем свои события
-    for raw_page in raw_pages:
-        raw_events_list_element = raw_page \
-            .find(name="div", class_=["event_flex_main", "events-items"])
+    try:
+        html_decoded_string = html.unescape(response.text)
+        raw_page = BeautifulSoup(html_decoded_string, "html.parser")
+    except Exception as e:
+        logger.error(f"Failed to parse the HTML: {e}")
+        return events
 
-        raw_events_list = raw_events_list_element\
-            .find_all("div", class_="event-wrapper")
-        raw_events_additional_info_list = raw_events_list_element\
-            .find_all("div", class_="event")
+    raw_events_list = raw_page.select('div.event-wrapper')
+    raw_events_additional_info_list = raw_page.select('div.event_flex_item')
 
-        raw_events = [(raw_events_list[i], raw_events_additional_info_list[i]) \
-                       for i in range(len(raw_events_list))]
+    if len(raw_events_list) != len(raw_events_additional_info_list):
+        logger.warning("Mismatch in the number of events and additional info")
 
-        for raw_event, event_additional_data in raw_events:
-            event = Event()
-            event.title = raw_event \
-                .find(name="div", class_="event-title") \
-                .string
-            description_items = raw_event \
-                .find(name="span", attrs={"itemprop": "description"}).contents
+    raw_events = list(zip(raw_events_list, raw_events_additional_info_list))
 
-            description = ""
-            for description_item in description_items:
-                description += re.sub(HTML_TAG_CLEANER, "", str(description_item)\
-                    .strip(" \n\t\r")) + "\n"
-
-            description = description.replace("\t", "")
-            description = description.replace("\r", "")
-            description = description.replace("\n\n\n", "\n")
-            description = description.replace("\n\n", "\n")
-            event.description = description
-
-            # Добавляем теги к описанию
-            tags_div = event_additional_data.find("div", class_="news-topics")
-            if tags_div is not None:
-                raw_tags = tags_div.find_all("a")
-                for raw_tag in raw_tags:
-                    event.description += (". " + raw_tag.string)
-
-            raw_start_date = raw_event.find(name="div",
-                                            attrs={"itemprop": "startDate"}) \
-                                      .get("content")
-            event.start_date = datetime.fromisoformat(raw_start_date)
-            raw_end_date = raw_event.find(name="div",
-                                          attrs={"itemprop": "endDate"}) \
-                                    .get("content")
-            event.end_date = datetime.fromisoformat(raw_end_date)
-
-            # Переводим в московское время
-            moscow_tz = timezone(timedelta(hours=3))
-            event.start_date = event.start_date.astimezone(moscow_tz)
-            event.end_date = event.end_date.astimezone(moscow_tz)
-
-            #  Проверка на актуальность
-            if event.start_date < datetime.now(
-                    tzlocal()).astimezone(moscow_tz):
-                continue
-
-            event.url = "https://all-events.ru" \
-                + raw_event.find(name="a", attrs={"itemprop": "url"}) \
-                           .get("href")
-            # event.img = "https://all-events.ru"  \
-            # + raw_event.find(name="img").get("src")
-            event.address = raw_event.find(name="div", class_="event-venue") \
-                                     .find(name="div", class_="address") \
-                                     .find(name="span", attrs={"itemprop": "addressLocality"}) \
-                                     .string
-
-            raw_event_type = event_additional_data.find(
-                "div", class_="event-type").string
-
-            # Если данного типа мерроприятия нет в списке, то пропускаем его
-            if raw_event_type not in event_types.keys():
-                continue
-
-            event.type_of_event = EventTypeClassifier \
-                .objects.get(type_code=event_types[raw_event_type])
-
-            # Вычисление стоимости мероприятия
-            raw_event_cost_type = raw_event.find("div", class_="event-price") \
-                                           .get("content") \
-                                           .strip(" ")
-
-            if raw_event_cost_type == "Бесплатно":
-                event.is_free = True
-            elif raw_event_cost_type != "" \
-                and raw_event_cost_type[len(raw_event_cost_type)-1].isdigit():
-                event.is_free = False
-
-            events.append(event)
+    for raw_event, event_additional_data in raw_events:
+        try:
+            event = parse_event(raw_event, event_additional_data, event_types)
+            if event:
+                events.append(event)
+        except Exception as e:
+            logger.error(f"Failed to parse event: {e}")
+            continue
 
     return events
+
+
+def parse_event(raw_event, event_additional_data, event_types):
+    event = Event()
+
+    try:
+        event.title = raw_event.select_one('div.event-title').text.strip()
+    except AttributeError:
+        logger.warning(f"Could not find title for event")
+        return None
+
+    try:
+        description_items = raw_event.select_one('span[itemprop="description"]').stripped_strings
+        description = " ".join(description_items)
+        description = re.sub(HTML_TAG_CLEANER, "", description)
+        event.description = description.replace("\t", "").replace("\r", "").replace("\n\n\n", "\n").replace("\n\n",
+                                                                                                            "\n")
+    except AttributeError:
+        logger.warning(f"Could not find description for event: {event.title}")
+
+    try:
+        tags = raw_event.select('div.teg_content a')
+        for tag in tags:
+            event.description += f". {tag.text}"
+    except Exception:
+        logger.warning(f"Could not process tags for event: {event.title}")
+
+    try:
+        raw_start_date = raw_event.select_one('div[itemprop="startDate"]')['content']
+        event.start_date = datetime.fromisoformat(raw_start_date)
+        raw_end_date = raw_event.select_one('div[itemprop="endDate"]')['content']
+        event.end_date = datetime.fromisoformat(raw_end_date)
+
+        moscow_tz = timezone(timedelta(hours=3))
+        event.start_date = event.start_date.astimezone(moscow_tz)
+        event.end_date = event.end_date.astimezone(moscow_tz)
+
+        if event.start_date < datetime.now(tzlocal()).astimezone(moscow_tz):
+            return None
+    except Exception as e:
+        logger.error(f"Failed to process dates for event {event.title}: {e}")
+        return None
+
+    try:
+        event.url = "https://all-events.ru" + raw_event.select_one('a[itemprop="url"]')['href']
+    except AttributeError:
+        logger.warning(f"Could not find URL for event: {event.title}")
+
+    try:
+        address_element = raw_event.select_one('div.event-venue div.address span[itemprop="addressLocality"]')
+        event.address = address_element.text if address_element else ""
+    except Exception:
+        logger.warning(f"Could not find address for event: {event.title}")
+
+    try:
+        raw_event_type_element = event_additional_data.select_one(
+            'div.event_info_new a.event_info_new_text.mob_name_event span:not([class])')
+        raw_event_type = raw_event_type_element.text if raw_event_type_element else ""
+
+        if raw_event_type not in event_types.keys():
+            logger.warning(f"Unknown event type for event: {event.title}")
+            return None
+
+        event.type_of_event = EventTypeClassifier.objects.get(type_code=event_types[raw_event_type])
+    except Exception as e:
+        logger.error(f"Failed to process event type for {event.title}: {e}")
+        return None
+
+    try:
+        raw_event_cost_type_element = raw_event.select_one('div.event-price')
+        raw_event_cost_type = raw_event_cost_type_element['content'].strip() if raw_event_cost_type_element else ""
+
+        if raw_event_cost_type == "Бесплатно":
+            event.is_free = True
+        elif raw_event_cost_type and raw_event_cost_type[-1].isdigit():
+            event.is_free = False
+        else:
+            logger.warning(f"Unclear event cost type for event: {event.title}")
+    except Exception:
+        logger.warning(f"Could not determine if event is free: {event.title}")
+
+    return event
