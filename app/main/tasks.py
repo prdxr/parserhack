@@ -100,6 +100,8 @@ def parse_new_events() -> None:
     """
     logger.info("Запуск задачи parse_new_events")
     all_threads = [
+        get_codenrock_events,
+        get_all_events,
         get_hackathon_com_events,
         get_ict2go_events, get_leader_id_events,
         get_na_conferencii_events, get_2035_university_events
